@@ -77,8 +77,6 @@ EverythingToolbar在Windows 10和Windows 11上无缝运行，并与[ExplorerPatc
 - **安装程序**：从[GitHub Releases](https://github.com/srwi/EverythingToolbar/releases)下载
 - **winget**：`winget install srwi.everythingtoolbar.launcher`或`winget install srwi.everythingtoolbar.deskband`
 
-> **重要提示：** 对于Everything 1.5a用户，请在EverythingToolbar的高级设置中将实例名称设置为`1.5a`（**设置** → **高级** → **Everything实例名称**）。([截图](https://raw.githubusercontent.com/srwi/EverythingToolbar/develop/.github/images/named_instance.png))
-
 ## ⚙️ 设置
 
 ### 启动器（任务栏图标）

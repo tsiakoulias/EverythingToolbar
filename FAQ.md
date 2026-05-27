@@ -11,7 +11,7 @@ If you're not seeing search results, try these troubleshooting steps:
 
 - **Check Everything is running**: Verify that [Everything](https://www.voidtools.com) (not just EverythingToolbar) is running in the background. You should see an orange search icon in the system tray.
 - **Check Everything version**: You may be running the lite version of [Everything](https://www.voidtools.com), which doesn't allow other applications to retrieve search results. Please uninstall it and install the regular version instead. Make sure it's running in the background.
-- **Everything 1.5 alpha users**: If you're using Everything 1.5 alpha, you need to change the Everything instance name to `1.5a` in EverythingToolbar settings.
+- **Everything 1.5 users**: If you upgraded from Everything 1.5 alpha to Everything 1.5 beta or newer, clear the Everything instance name in EverythingToolbar settings.
 
 ### ❓ What is the difference between the Deskband and Launcher variants of EverythingToolbar?
 
@@ -53,13 +53,13 @@ While EverythingToolbar's main goal is to provide fast search results rather tha
 
 **Tip**: Use Everything's filter order or EverythingToolbar's `Settings → Filters → Remember filter` option to control which filter is selected when opening the search window.
 
-### ❓ How can I use EverythingToolbar with Everything 1.5a?
-To use EverythingToolbar with Everything 1.5a:
+### ❓ How should I configure the Everything instance name for Everything 1.5?
+For Everything 1.5 beta or newer, leave the Everything instance name empty in EverythingToolbar:
 
 1. Go to `Settings → Advanced → Everything instance name`
-2. Change the instance name to `1.5a`
+2. Clear the field
 
-**Note**: This will likely not be necessary once Everything 1.5a is released as stable.
+The old `1.5a` instance name was only needed for Everything 1.5 alpha builds.
 
 ### ❓ How do I move the search icon on the taskbar?
 The method depends on which variant you're using:
