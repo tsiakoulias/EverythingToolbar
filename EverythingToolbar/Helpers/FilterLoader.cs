@@ -14,8 +14,15 @@ namespace EverythingToolbar.Helpers
                 if (ToolbarSettings.User.IsRegExEnabled)
                     return new ObservableCollection<Filter>([DefaultFilterLoader.AllFilter]);
 
-                if (ToolbarSettings.User.IsImportFilters && EverythingFilterLoader.Instance.Filters != null)
-                    return EverythingFilterLoader.Instance.Filters;
+                if (ToolbarSettings.User.IsImportFilters)
+                {
+                    var everythingFilters = EverythingFilterLoader.Instance.Filters;
+
+                    if (everythingFilters?.Count > 0)
+                        return everythingFilters;
+
+                    return new ObservableCollection<Filter>([DefaultFilterLoader.AllFilter]);
+                }
 
                 return DefaultFilterLoader.Instance.Filters;
             }
