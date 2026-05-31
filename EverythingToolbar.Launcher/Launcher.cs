@@ -155,6 +155,7 @@ namespace EverythingToolbar.Launcher
                 Settings.Advanced.GetAutostartStateCallback = () => Utils.GetAutostartState();
                 Settings.Advanced.SetAutostartStateCallback = (state) => Utils.SetAutostartState(state);
             }
+
             private void ToggleWindow()
             {
                 // Prevent search window from reappearing after clicking the icon to close
