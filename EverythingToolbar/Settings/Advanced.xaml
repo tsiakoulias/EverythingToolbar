@@ -120,6 +120,19 @@
                     Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1,0,1,1"
+                    CornerRadius="0,0,0,0"
+                    Visibility="{Binding IsLauncher, Converter={c:BoolToVisibilityConverter}}">
+                <controls:SettingItem Title="{x:Static properties:Resources.SettingsEnableAutostart}"
+                                      HelpText="{x:Static properties:Resources.SettingsEnableAutostartHelp}">
+                    <controls:SettingItem.SettingContent>
+                        <ui:ToggleSwitch IsChecked="{Binding IsAutostartEnabled, Mode=TwoWay}" />
+                    </controls:SettingItem.SettingContent>
+                </controls:SettingItem>
+            </Border>
+            <Border Padding="16"
+                    Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1,0,1,1"
                     CornerRadius="0, 0,8,8"
                     Visibility="{Binding WindowsBuildVersion, Converter={c:WindowsVersionToVisibilityConverter}, ConverterParameter='>=22000'}">
                 <controls:SettingItem Title="{x:Static properties:Resources.SettingsForceWin10Styles}"
