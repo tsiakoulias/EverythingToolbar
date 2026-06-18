@@ -668,7 +668,7 @@ namespace EverythingToolbar.Controls
             if (SelectedItem == null)
                 return;
 
-            if (Keyboard.Modifiers == ModifierKeys.Shift)
+            if (ToolbarSettings.User.IsSystemContextMenuDefault != (Keyboard.Modifiers == ModifierKeys.Shift))
             {
                 SelectedItem.ShowWindowsContextMenu();
                 e.Handled = true;

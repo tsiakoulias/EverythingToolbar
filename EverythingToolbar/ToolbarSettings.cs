@@ -91,6 +91,9 @@ namespace EverythingToolbar
         bool IsThumbnailsEnabled { get; set; }
 
         [Option(DefaultValue = false)]
+        bool IsSystemContextMenuDefault { get; set; }
+
+        [Option(DefaultValue = false)]
         bool IsPreviewPaneEnabled { get; set; }
 
         [Option(DefaultValue = "")]
@@ -481,6 +484,19 @@ namespace EverythingToolbar
                 if (settings.IsThumbnailsEnabled != value)
                 {
                     settings.IsThumbnailsEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSystemContextMenuDefault
+        {
+            get => settings.IsSystemContextMenuDefault;
+            set
+            {
+                if (settings.IsSystemContextMenuDefault != value)
+                {
+                    settings.IsSystemContextMenuDefault = value;
                     OnPropertyChanged();
                 }
             }
