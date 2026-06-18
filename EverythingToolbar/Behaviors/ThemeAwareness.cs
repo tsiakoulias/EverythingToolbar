@@ -26,10 +26,10 @@ namespace EverythingToolbar.Behaviors
 
     public class ThemeAwareness : Behavior<FrameworkElement>
     {
-        public static event EventHandler<ResourcesChangedEventArgs> ResourceChanged;
+        public static event EventHandler<ResourcesChangedEventArgs>? ResourceChanged;
 
         private readonly List<ResourceDictionary> _addedDictionaries = new();
-        private UISettings _settings;
+        private UISettings? _settings;
         private static readonly RegistryEntry SystemThemeRegistryEntry = new(
             "HKEY_CURRENT_USER",
             @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
@@ -60,7 +60,7 @@ namespace EverythingToolbar.Behaviors
             {
                 Dispatcher.Invoke(() =>
                 {
-                    var theme = GetThemeFromRegistryValue((int)newValue);
+                    var theme = GetThemeFromRegistryValue((int)(newValue ?? 0));
                     ApplyTheme(theme);
                 });
             };
@@ -81,7 +81,7 @@ namespace EverythingToolbar.Behaviors
             ToolbarSettings.User.PropertyChanged += OnSettingsChanged;
         }
 
-        private void OnSettingsChanged(object sender, PropertyChangedEventArgs e)
+        private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (
                 e.PropertyName
@@ -111,7 +111,7 @@ namespace EverythingToolbar.Behaviors
 
         private void AutoApplyTheme()
         {
-            var themeValue = (int)SystemThemeRegistryEntry.GetValue(0);
+            var themeValue = (int)(SystemThemeRegistryEntry.GetValue(0) ?? 0);
             var theme = GetThemeFromRegistryValue(themeValue);
             ApplyTheme(theme);
         }
@@ -125,6 +125,11 @@ namespace EverythingToolbar.Behaviors
             _addedDictionaries.Clear();
 
             var assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (assemblyLocation == null)
+            {
+                Logger.Error("Could not determine assembly location.");
+                return;
+            }
 
             var themeLocation = assemblyLocation;
             if (Utils.GetWindowsVersion() >= Utils.WindowsVersion.Windows11)
@@ -169,7 +174,7 @@ namespace EverythingToolbar.Behaviors
             ResourceChanged?.Invoke(this, new ResourcesChangedEventArgs { NewTheme = theme });
         }
 
-        private void AddResource(string path, string fallbackPath = null)
+        private void AddResource(string path, string? fallbackPath = null)
         {
             if (!File.Exists(path))
             {

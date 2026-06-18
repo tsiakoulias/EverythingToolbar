@@ -27,7 +27,7 @@ namespace EverythingToolbar.Data
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private string _name;
+        private string _name = "";
         public string Name
         {
             get => _name;
@@ -49,7 +49,7 @@ namespace EverythingToolbar.Data
             }
         }
 
-        private string _expression;
+        private string _expression = "";
         public string Expression
         {
             get => _expression;
@@ -77,7 +77,7 @@ namespace EverythingToolbar.Data
             }
         }
 
-        private string _command;
+        private string _command = "";
         public string Command
         {
             get => _command;

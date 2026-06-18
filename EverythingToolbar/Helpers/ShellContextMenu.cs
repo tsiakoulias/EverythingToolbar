@@ -213,7 +213,7 @@ namespace Peter
         /// </summary>
         /// <param name="folderName">Folder path</param>
         /// <returns>IShellFolder for the folder (relative from the desktop)</returns>
-        private IShellFolder GetParentFolder(string folderName)
+        private IShellFolder? GetParentFolder(string folderName)
         {
             if (null == _oParentFolder)
             {
@@ -241,7 +241,7 @@ namespace Peter
 
                 var pStrRet = Marshal.AllocCoTaskMem(MAX_PATH * 2 + 4);
                 Marshal.WriteInt32(pStrRet, 0, 0);
-                _ = _oDesktopFolder.GetDisplayNameOf(pPIDL, SHGNO.FORPARSING, pStrRet);
+                _ = oDesktopFolder.GetDisplayNameOf(pPIDL, SHGNO.FORPARSING, pStrRet);
                 var strFolder = new StringBuilder(MAX_PATH);
                 StrRetToBuf(pStrRet, pPIDL, strFolder, MAX_PATH);
                 Marshal.FreeCoTaskMem(pStrRet);
@@ -274,14 +274,20 @@ namespace Peter
         /// </summary>
         /// <param name="arrFI">Array of FileInfo</param>
         /// <returns>Array of PIDLs</returns>
-        protected IntPtr[] GetPIDLs(FileInfo[] arrFI)
+        protected IntPtr[]? GetPIDLs(FileInfo[] arrFI)
         {
             if (null == arrFI || 0 == arrFI.Length)
             {
                 return null;
             }
 
-            var oParentFolder = GetParentFolder(arrFI[0].DirectoryName);
+            var directoryName = arrFI[0].DirectoryName;
+            if (null == directoryName)
+            {
+                return null;
+            }
+
+            var oParentFolder = GetParentFolder(directoryName);
             if (null == oParentFolder)
             {
                 return null;
@@ -320,14 +326,20 @@ namespace Peter
         /// </summary>
         /// <param name="arrFI">Array of DirectoryInfo</param>
         /// <returns>Array of PIDLs</returns>
-        protected IntPtr[] GetPIDLs(DirectoryInfo[] arrFI)
+        protected IntPtr[]? GetPIDLs(DirectoryInfo[] arrFI)
         {
             if (null == arrFI || 0 == arrFI.Length)
             {
                 return null;
             }
 
-            var oParentFolder = GetParentFolder(arrFI[0].Parent.FullName);
+            var parentFolder = arrFI[0].Parent;
+            if (null == parentFolder)
+            {
+                return null;
+            }
+
+            var oParentFolder = GetParentFolder(parentFolder.FullName);
             if (null == oParentFolder)
             {
                 return null;
@@ -425,7 +437,7 @@ namespace Peter
 
             try
             {
-                if (null == _arrPIDLs)
+                if (null == _arrPIDLs || null == _oParentFolder)
                 {
                     ReleaseAll();
                     return;
@@ -441,7 +453,7 @@ namespace Peter
 
                 pMenu = CreatePopupMenu();
 
-                _oContextMenu.QueryContextMenu(
+                _oContextMenu!.QueryContextMenu(
                     pMenu,
                     0,
                     CMD_FIRST,
@@ -471,7 +483,7 @@ namespace Peter
 
                 if (nSelected != 0)
                 {
-                    InvokeCommand(_oContextMenu, nSelected, _strParentFolder, pointScreen);
+                    InvokeCommand(_oContextMenu!, nSelected, _strParentFolder, pointScreen);
                 }
             }
             finally
@@ -497,13 +509,13 @@ namespace Peter
         #endregion
 
         #region Local variabled
-        private IContextMenu _oContextMenu;
-        private IContextMenu2 _oContextMenu2;
-        private IContextMenu3 _oContextMenu3;
-        private IShellFolder _oDesktopFolder;
-        private IShellFolder _oParentFolder;
-        private IntPtr[] _arrPIDLs;
-        private string _strParentFolder;
+        private IContextMenu? _oContextMenu;
+        private IContextMenu2? _oContextMenu2;
+        private IContextMenu3? _oContextMenu3;
+        private IShellFolder? _oDesktopFolder;
+        private IShellFolder? _oParentFolder;
+        private IntPtr[]? _arrPIDLs;
+        private string _strParentFolder = "";
         #endregion
 
         #region Variables and Constants
@@ -1448,7 +1460,7 @@ namespace Peter
 
         // ************************************************************************
         // Event: HookInvoked
-        public event HookEventHandler HookInvoked;
+        public event HookEventHandler? HookInvoked;
 
         protected void OnHookInvoked(HookEventArgs e)
         {

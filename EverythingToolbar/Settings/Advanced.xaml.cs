@@ -14,7 +14,7 @@ namespace EverythingToolbar.Settings
         private bool _downloadUpdateButtonVisible;
         private bool _checkingForUpdatesVisible;
         private bool _noUpdatesBannerOpen;
-        private string _latestVersionUrl;
+        private string _latestVersionUrl = "";
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -71,8 +71,8 @@ namespace EverythingToolbar.Settings
             }
         }
 
-        public static Func<bool> GetAutostartStateCallback { get; set; }
-        public static Action<bool> SetAutostartStateCallback { get; set; }
+        public static Func<bool>? GetAutostartStateCallback { get; set; }
+        public static Action<bool>? SetAutostartStateCallback { get; set; }
 
         private bool _isAutostartEnabled = GetAutostartStateCallback?.Invoke() ?? false;
 

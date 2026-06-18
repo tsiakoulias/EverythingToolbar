@@ -40,6 +40,7 @@ namespace EverythingToolbar.Helpers
                             return false;
                         }
                     })
+                    .Select(name => name!)
                     .OrderBy(c => c)
                     .ToArray();
             }
@@ -130,12 +131,8 @@ namespace EverythingToolbar.Helpers
             }
             else
             {
-                culture = GetCultureInfo(languageCode);
-                if (culture == null)
-                {
-                    // Fallback to system culture if invalid
-                    culture = CultureInfo.CurrentUICulture;
-                }
+                // Fallback to system culture if invalid
+                culture = GetCultureInfo(languageCode) ?? CultureInfo.CurrentUICulture;
             }
 
             // Apply culture to current thread

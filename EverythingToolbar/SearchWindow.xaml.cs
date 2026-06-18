@@ -13,8 +13,8 @@ namespace EverythingToolbar
     public partial class SearchWindow
     {
         public static readonly SearchWindow Instance = new();
-        public event EventHandler<EventArgs> Hiding;
-        public event EventHandler<EventArgs> Showing;
+        public event EventHandler<EventArgs>? Hiding;
+        public event EventHandler<EventArgs>? Showing;
 
         private bool _dwmFlushOnRender;
         private bool _isFirstShow = true;
@@ -71,7 +71,7 @@ namespace EverythingToolbar
             if (Visibility != Visibility.Visible)
                 return;
 
-            Hiding.Invoke(this, EventArgs.Empty);
+            Hiding?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnHidden(object? sender, EventArgs e)
@@ -122,14 +122,14 @@ namespace EverythingToolbar
                 Dispatcher.BeginInvoke(
                     new Action(() =>
                     {
-                        Showing.Invoke(this, EventArgs.Empty);
+                        Showing?.Invoke(this, EventArgs.Empty);
                     }),
                     DispatcherPriority.Loaded
                 );
             }
             else
             {
-                Showing.Invoke(this, EventArgs.Empty);
+                Showing?.Invoke(this, EventArgs.Empty);
             }
         }
 

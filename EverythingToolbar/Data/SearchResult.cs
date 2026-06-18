@@ -41,15 +41,15 @@ namespace EverythingToolbar.Data
 
         public bool IsFile { get; init; }
 
-        public string FullPathAndFileName { get; init; }
+        public string FullPathAndFileName { get; init; } = "";
 
         public string Path => System.IO.Path.GetDirectoryName(FullPathAndFileName) ?? "";
 
-        public string HighlightedPath { get; set; }
+        public string HighlightedPath { get; set; } = "";
 
         public string FileName => System.IO.Path.GetFileName(FullPathAndFileName);
 
-        public string HighlightedFileName { get; set; }
+        public string HighlightedFileName { get; set; } = "";
 
         public long FileSize { get; init; }
 

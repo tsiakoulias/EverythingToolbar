@@ -2,7 +2,7 @@ namespace EverythingToolbar.Data
 {
     public class Filter
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public string Icon { get; set; } = "";
         public string Search { get; set; } = "";
         public string Macro { get; set; } = "";
