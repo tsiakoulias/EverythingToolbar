@@ -528,15 +528,6 @@ namespace EverythingToolbar.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to register hotkey. It might be in use by another application..
-        /// </summary>
-        public static string MessageBoxFailedToRegisterHotkey {
-            get {
-                return ResourceManager.GetString("MessageBoxFailedToRegisterHotkey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to run command.
         /// </summary>
         public static string MessageBoxFailedToRunCommand {

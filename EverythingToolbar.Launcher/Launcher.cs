@@ -9,7 +9,6 @@ using EverythingToolbar.Controls;
 using EverythingToolbar.Helpers;
 using EverythingToolbar.Launcher.Properties;
 using Microsoft.Xaml.Behaviors;
-using NHotkey;
 using Application = System.Windows.Application;
 using MessageBoxResult = Wpf.Ui.Controls.MessageBoxResult;
 using Timer = System.Timers.Timer;
@@ -123,7 +122,7 @@ namespace EverythingToolbar.Launcher
                 _searchWindowRecentlyClosedTimer?.Start();
             }
 
-            private static void FocusSearchBox(object? sender, HotkeyEventArgs e)
+            private static void FocusSearchBox()
             {
                 SearchWindow.Instance.Toggle();
             }

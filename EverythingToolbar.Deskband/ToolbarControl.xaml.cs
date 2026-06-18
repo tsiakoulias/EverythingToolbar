@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Input;
 using EverythingToolbar.Helpers;
 using Microsoft.Xaml.Behaviors;
-using NHotkey;
 
 namespace EverythingToolbar.Deskband
 {
@@ -45,7 +44,7 @@ namespace EverythingToolbar.Deskband
             SearchWindow.Instance.Show();
         }
 
-        private void FocusSearchBox(object? sender, HotkeyEventArgs e)
+        private void FocusSearchBox()
         {
             if (TaskbarStateManager.Instance.IsIcon)
             {

@@ -1,54 +1,190 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
-using EverythingToolbar.Controls;
-using EverythingToolbar.Properties;
-using NHotkey;
-using NHotkey.Wpf;
+using System.Windows.Threading;
 using NLog;
 
 namespace EverythingToolbar.Helpers
 {
     public class ShortcutManager
     {
-        private const string HotkeyName = "EverythingToolbarHotkey";
         private static readonly ILogger Logger = ToolbarLogger.GetLogger<ShortcutManager>();
-        private static EventHandler<HotkeyEventArgs>? _handler;
 
-        public static void Initialize(EventHandler<HotkeyEventArgs> handler)
+        private static Action? _handler;
+        private static Dispatcher? _dispatcher;
+
+        private static int _triggerVk;
+        private static ModifierKeys _modifiers;
+        private static bool _hotkeyDown;
+
+        public static bool IsEnabled { get; set; } = true;
+
+        private static LowLevelKeyboardProc? _hookCallback;
+        private static IntPtr _hookId = IntPtr.Zero;
+
+        private const int WhKeyboardLl = 13;
+        private const int WmKeydown = 0x0100;
+        private const int WmKeyup = 0x0101;
+        private const int WmSyskeydown = 0x0104;
+        private const int WmSyskeyup = 0x0105;
+
+        private const int VkShift = 0x10;
+        private const int VkControl = 0x11;
+        private const int VkMenu = 0x12; // Alt
+        private const int VkLWin = 0x5B;
+        private const int VkRWin = 0x5C;
+
+        private const int LlkhfInjected = 0x10;
+        private const uint KeyeventfKeyup = 0x0002;
+
+        public static void Initialize(Action handler)
         {
             _handler = handler;
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
-            var shortcutKey = (Key)ToolbarSettings.User.ShortcutKey;
-            var shortcutModifiers = (ModifierKeys)ToolbarSettings.User.ShortcutModifiers;
-
-            if (shortcutKey == Key.None && shortcutModifiers == ModifierKeys.None)
-                return;
-
-            TrySetShortcut(shortcutKey, shortcutModifiers);
+            SetShortcut((Key)ToolbarSettings.User.ShortcutKey, (ModifierKeys)ToolbarSettings.User.ShortcutModifiers);
         }
 
-        public static void TrySetShortcut(Key key, ModifierKeys modifiers)
+        public static void SetShortcut(Key key, ModifierKeys modifiers)
         {
-            try
-            {
-                HotkeyManager.Current.AddOrReplace(HotkeyName, key, modifiers, _handler);
-                UpdateSettings(key, modifiers);
-            }
-            catch (HotkeyAlreadyRegisteredException e)
-            {
-                UpdateSettings(Key.None, ModifierKeys.None);
+            _triggerVk = key == Key.None ? 0 : KeyInterop.VirtualKeyFromKey(key);
+            _modifiers = modifiers;
+            _hotkeyDown = false;
 
-                Logger.Error(e, "Failed to register hotkey {0} with modifiers {1}", key, modifiers);
-                FluentMessageBox
-                    .CreateError(Resources.MessageBoxFailedToRegisterHotkey, Resources.MessageBoxErrorTitle)
-                    .ShowDialogAsync();
-            }
+            UpdateSettings(key, modifiers);
+
+            if (key == Key.None && modifiers == ModifierKeys.None)
+                RemoveHook();
+            else
+                InstallHook();
         }
 
-        public static void UpdateSettings(Key key, ModifierKeys mods)
+        private static void UpdateSettings(Key key, ModifierKeys mods)
         {
             ToolbarSettings.User.ShortcutKey = (int)key;
             ToolbarSettings.User.ShortcutModifiers = (int)mods;
         }
+
+        private static void InstallHook()
+        {
+            if (_hookId != IntPtr.Zero)
+                return;
+
+            _hookCallback = HookCallback;
+            _hookId = SetWindowsHookEx(WhKeyboardLl, _hookCallback, IntPtr.Zero, 0);
+
+            if (_hookId == IntPtr.Zero)
+                Logger.Error("Failed to install the keyboard hook for the global shortcut.");
+        }
+
+        private static void RemoveHook()
+        {
+            if (_hookId == IntPtr.Zero)
+                return;
+
+            UnhookWindowsHookEx(_hookId);
+            _hookId = IntPtr.Zero;
+            _hookCallback = null;
+        }
+
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            try
+            {
+                if (nCode < 0 || !IsEnabled || _triggerVk == 0)
+                    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+
+                if (Marshal.ReadInt32(lParam) != _triggerVk)
+                    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+
+                // Ignore events we injected ourselves (e.g. the disguise keystroke below).
+                var flags = Marshal.ReadInt32(lParam, 8);
+                if ((flags & LlkhfInjected) != 0)
+                    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+
+                var message = (int)wParam;
+
+                if (message == WmKeyup || message == WmSyskeyup)
+                {
+                    if (!_hotkeyDown)
+                        return CallNextHookEx(_hookId, nCode, wParam, lParam);
+
+                    _hotkeyDown = false;
+                    return 1; // Swallow the key up matching a suppressed key down
+                }
+
+                if (message == WmKeydown || message == WmSyskeydown)
+                {
+                    if (_hotkeyDown)
+                        return 1; // Swallow auto-repeat while the hotkey is held
+
+                    if (GetCurrentModifiers() == _modifiers)
+                    {
+                        _hotkeyDown = true;
+                        DisguiseModifiersIfNeeded();
+                        _dispatcher?.BeginInvoke(() => _handler?.Invoke());
+                        return 1; // Swallow the trigger key
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Error in the keyboard hook callback.");
+            }
+
+            return CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        private static ModifierKeys GetCurrentModifiers()
+        {
+            var modifiers = ModifierKeys.None;
+            if (IsKeyDown(VkControl))
+                modifiers |= ModifierKeys.Control;
+            if (IsKeyDown(VkShift))
+                modifiers |= ModifierKeys.Shift;
+            if (IsKeyDown(VkMenu))
+                modifiers |= ModifierKeys.Alt;
+            if (IsKeyDown(VkLWin) || IsKeyDown(VkRWin))
+                modifiers |= ModifierKeys.Windows;
+            return modifiers;
+        }
+
+        private static void DisguiseModifiersIfNeeded()
+        {
+            // Tapping the Windows key opens the Start menu and tapping Alt activates the window
+            // menu, both on key up. Because we swallow the actual trigger key, Windows would treat
+            // the modifier as if it had been pressed on its own. Injecting a neutral Ctrl tap while
+            // the modifier is still held disguises it and prevents that behavior.
+            if ((_modifiers & (ModifierKeys.Windows | ModifierKeys.Alt)) == 0)
+                return;
+
+            keybd_event(VkControl, 0, 0, UIntPtr.Zero);
+            keybd_event(VkControl, 0, KeyeventfKeyup, UIntPtr.Zero);
+        }
+
+        private static bool IsKeyDown(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(
+            int idHook,
+            LowLevelKeyboardProc lpfn,
+            IntPtr hMod,
+            uint dwThreadId
+        );
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
     }
 }

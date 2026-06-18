@@ -59,7 +59,6 @@
   </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="NHotkey.Wpf" Version="2.1.0" />
     <PackageReference Include="NLog" Version="5.1.1" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Platform)'=='x64'">

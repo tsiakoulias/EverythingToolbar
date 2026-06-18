@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using EverythingToolbar.Helpers;
-using NHotkey.Wpf;
 
 namespace EverythingToolbar.Settings
 {
@@ -169,7 +167,7 @@ namespace EverythingToolbar.Settings
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             StartMenuIntegration.Instance.Disable();
-            HotkeyManager.Current.IsEnabled = false;
+            ShortcutManager.IsEnabled = false;
 
             Modifiers = (ModifierKeys)ToolbarSettings.User.ShortcutModifiers;
             Key = (Key)ToolbarSettings.User.ShortcutKey;
@@ -182,31 +180,14 @@ namespace EverythingToolbar.Settings
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            HotkeyManager.Current.IsEnabled = true;
+            ShortcutManager.IsEnabled = true;
             ReleaseKeyboard();
             StartMenuIntegration.Instance.Initialize();
 
             if (Key != OriginalKey || Modifiers != OriginalModifiers)
             {
-                ApplyShortcut();
+                ShortcutManager.SetShortcut(Key, Modifiers);
             }
-        }
-
-        private void ApplyShortcut()
-        {
-            if (Modifiers == ModifierKeys.Windows)
-            {
-                // Windows Explorer reserves many shortcuts with the Windows key. Therefore, we need to update the settings,
-                // kill explorer (and the deskband) and let the initialize routine set the shortcut before explorer has time to do so.
-                ShortcutManager.UpdateSettings(Key, Modifiers);
-                foreach (var exe in Process.GetProcesses())
-                {
-                    if (exe.ProcessName == "explorer")
-                        exe.Kill();
-                }
-            }
-
-            ShortcutManager.TrySetShortcut(Key, Modifiers);
         }
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
