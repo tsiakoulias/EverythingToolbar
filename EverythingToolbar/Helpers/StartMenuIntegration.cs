@@ -23,7 +23,7 @@ namespace EverythingToolbar.Helpers
         private static IntPtr _searchAppHwnd = IntPtr.Zero;
         private static bool _isNativeSearchActive;
         private static bool _isInterceptingKeys;
-        private static bool _initialAnimationsEnabledState;
+        private static bool? _animationsToRestore;
         private readonly DispatcherTimer _cleanupTimer = new() { Interval = TimeSpan.FromSeconds(1) };
 
         private const int WhKeyboardLl = 13;
@@ -55,9 +55,8 @@ namespace EverythingToolbar.Helpers
             }
         }
 
-        public void Enable()
+        private void Enable()
         {
-            _initialAnimationsEnabledState = Utils.GetSystemAnimationsEnabled();
             UnhookWinEvent(_focusedWindowChangedHookId);
             _focusedWindowChangedCallback = OnFocusedWindowChanged;
             _focusedWindowChangedHookId = SetWinEventHook(3, 3, IntPtr.Zero, _focusedWindowChangedCallback, 0, 0, 0);
@@ -97,7 +96,7 @@ namespace EverythingToolbar.Helpers
                 }
                 else
                 {
-                    Utils.SetSystemAnimationsEnabled(_initialAnimationsEnabledState);
+                    RestoreAnimations();
                 }
 
                 _searchAppHwnd = foregroundHwnd;
@@ -224,6 +223,7 @@ namespace EverythingToolbar.Helpers
         {
             if (_searchAppHwnd != IntPtr.Zero)
             {
+                _animationsToRestore ??= Utils.GetSystemAnimationsEnabled();
                 Utils.SetSystemAnimationsEnabled(false);
                 PostMessage(_searchAppHwnd, 0x0010, 0, 0);
                 _searchAppHwnd = IntPtr.Zero;
@@ -238,7 +238,16 @@ namespace EverythingToolbar.Helpers
             _searchAppHwnd = IntPtr.Zero;
             _isInterceptingKeys = false;
             _isNativeSearchActive = false;
-            Utils.SetSystemAnimationsEnabled(_initialAnimationsEnabledState);
+            RestoreAnimations();
+        }
+
+        private static void RestoreAnimations()
+        {
+            if (_animationsToRestore is not bool enabled)
+                return;
+
+            Utils.SetSystemAnimationsEnabled(enabled);
+            _animationsToRestore = null;
         }
 
         private void HookStartMenuInput()
