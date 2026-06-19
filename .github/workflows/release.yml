@@ -4,10 +4,17 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+      inputs:
+        version_tag:
+          description: 'Tag to build the release for'
+          required: true
 
 jobs:
   build-release:
     runs-on: ${{ matrix.runner }}
+    env:
+      VERSION_TAG: ${{ inputs.version_tag || github.ref_name }}
     strategy:
       matrix:
         include:
@@ -20,6 +27,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ env.VERSION_TAG }}
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -41,26 +50,26 @@ jobs:
         run: choco install innosetup -y --version 6.5.4 --allow-downgrade
 
       - name: Build installer
-        run: iscc /F"EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}" "Installer\${{ matrix.installer }}"
+        run: iscc /F"EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}" "Installer\${{ matrix.installer }}"
 
       - name: Generate SHA-256 checksum
         shell: bash
-        run: sha256sum Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.exe > Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.sha256
+        run: sha256sum Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.exe > Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: EverythingToolbar ${{ github.ref_name }} ${{ matrix.arch }}
+          name: EverythingToolbar ${{ env.VERSION_TAG }} ${{ matrix.arch }}
           path: |
-            Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.exe
-            Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.sha256
+            Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.exe
+            Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.sha256
 
       - name: Create release draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ github.ref_name }}" `
-            "Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.exe" `
-            "Installer/output/EverythingToolbar-${{ github.ref_name }}-${{ matrix.arch }}.sha256" `
+          gh release create "${{ env.VERSION_TAG }}" `
+            "Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.exe" `
+            "Installer/output/EverythingToolbar-${{ env.VERSION_TAG }}-${{ matrix.arch }}.sha256" `
             --draft `
-            --title "${{ github.ref_name }}"
+            --title "${{ env.VERSION_TAG }}"
