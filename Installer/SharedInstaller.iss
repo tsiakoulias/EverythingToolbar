@@ -33,10 +33,10 @@ CloseApplications=force
 
 [Files]
 ; Launcher files
-Source: "{#LauncherBuildDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion uninsrestartdelete; Check: IsLauncherSelected
-Source: "{#LauncherBuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs uninsrestartdelete; Check: IsLauncherSelected
+Source: "{#LauncherBuildDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete; Check: IsLauncherSelected
+Source: "{#LauncherBuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion restartreplace recursesubdirs createallsubdirs uninsrestartdelete; Check: IsLauncherSelected
 ; Deskband files (COM DLL)
-Source: "{#DeskbandBuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs uninsrestartdelete; Check: IsDeskbandSelected
+Source: "{#DeskbandBuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion restartreplace recursesubdirs createallsubdirs uninsrestartdelete; Check: IsDeskbandSelected
 
 [Registry]
 ; Deskband COM registration entries
