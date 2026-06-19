@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -264,6 +264,12 @@
   <data name="SettingsDisableAnimations" xml:space="preserve">
     <value>Disable animations</value>
   </data>
+  <data name="SettingsEnableAutostart" xml:space="preserve">
+    <value>Enable autostart</value>
+  </data>
+  <data name="SettingsEnableAutostartHelp" xml:space="preserve">
+    <value>Automatically starts EverythingToolbar when Windows starts</value>
+  </data>
   <data name="SettingsEnableHistory" xml:space="preserve">
     <value>Enable search history</value>
   </data>
@@ -306,11 +312,20 @@
   <data name="SettingsThumbnailsEnabled" xml:space="preserve">
     <value>Enable thumbnails</value>
   </data>
+  <data name="SettingsSystemContextMenuDefault" xml:space="preserve">
+    <value>Use system context menu by default</value>
+  </data>
   <data name="SettingsUseEverythingFilters" xml:space="preserve">
     <value>Use Everything filters</value>
   </data>
   <data name="SettingsView" xml:space="preserve">
     <value>View</value>
+  </data>
+  <data name="SettingsUILanguage" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="SettingsUILanguageHelp" xml:space="preserve">
+    <value>Choose the UI language. Restart the application to apply changes.</value>
   </data>
   <data name="SortByAttributes" xml:space="preserve">
     <value>Attributes</value>
@@ -540,6 +555,9 @@
   <data name="SettingsThumbnailsHelp" xml:space="preserve">
     <value>Show thumbnails for image files</value>
   </data>
+  <data name="SettingsSystemContextMenuDefaultHelp" xml:space="preserve">
+    <value>Show the Windows context menu when right-clicking a result</value>
+  </data>
   <data name="SettingsResultsCountHelp" xml:space="preserve">
     <value>Display the total number of search results</value>
   </data>
@@ -668,5 +686,14 @@
   </data>
   <data name="FocusBehaviorRepeatWithSearch" xml:space="preserve">
     <value>Repeat with search</value>
+  </data>
+  <data name="SettingsUseSystemLanguage" xml:space="preserve">
+    <value>Use System Language</value>
+  </data>
+  <data name="MessageBoxRestartTitle" xml:space="preserve">
+    <value>Restart required</value>
+  </data>
+  <data name="MessageBoxRestartMessage" xml:space="preserve">
+    <value>A restart is required for the language changes to take effect. Do you want to restart now?</value>
   </data>
 </root>
