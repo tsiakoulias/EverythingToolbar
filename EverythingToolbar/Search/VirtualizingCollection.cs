@@ -66,6 +66,9 @@ namespace EverythingToolbar.Search
                 return;
 
             _pages = new Dictionary<int, List<T>?>();
+            _pageAccessOrder.Clear();
+            _pageAccessNodes.Clear();
+            _displayedItems.Clear();
 
             ItemsProvider.PropertyChanged -= OnItemsProviderPropertyChanged;
             ItemsProvider = newProvider;
@@ -144,6 +147,7 @@ namespace EverythingToolbar.Search
                         if (task.IsCanceled)
                         {
                             _pages.Remove(index); // Page needs to be loaded again in the future
+                            RemovePageTracking(index);
                             return;
                         }
 
@@ -152,6 +156,8 @@ namespace EverythingToolbar.Search
 
                         List<T>? newItems = task.Result as List<T>;
                         _pages[index] = newItems;
+                        TouchPage(index);
+                        TrimPages();
 
                         try
                         {
@@ -206,6 +212,7 @@ namespace EverythingToolbar.Search
 
             if (_pages.TryGetValue(pageIndex, out var page))
             {
+                TouchPage(pageIndex);
                 if (page != null && pageOffset < page.Count)
                 {
                     return page[pageOffset];
@@ -223,6 +230,8 @@ namespace EverythingToolbar.Search
             if (IsAsync)
             {
                 _pages[pageIndex] = null; // Mark page as loading
+                TouchPage(pageIndex);
+                TrimPages();
 
                 LoadPageAsync(pageIndex);
 
@@ -236,12 +245,52 @@ namespace EverythingToolbar.Search
             {
                 var loadedPage = LoadPage(pageIndex);
                 _pages[pageIndex] = loadedPage;
+                TouchPage(pageIndex);
+                TrimPages();
                 if (pageOffset < loadedPage.Count)
                 {
                     return loadedPage[pageOffset];
                 }
 
                 return default!;
+            }
+        }
+
+        private void TouchPage(int pageIndex)
+        {
+            if (_pageAccessNodes.TryGetValue(pageIndex, out var node))
+            {
+                _pageAccessOrder.Remove(node);
+                _pageAccessOrder.AddFirst(node);
+            }
+            else
+            {
+                _pageAccessNodes[pageIndex] = _pageAccessOrder.AddFirst(pageIndex);
+            }
+        }
+
+        private void RemovePageTracking(int pageIndex)
+        {
+            if (_pageAccessNodes.TryGetValue(pageIndex, out var node))
+            {
+                _pageAccessOrder.Remove(node);
+                _pageAccessNodes.Remove(pageIndex);
+            }
+        }
+
+        private void TrimPages()
+        {
+            while (_pages.Count > MaxResidentPages && _pageAccessOrder.Last != null)
+            {
+                var lruPageIndex = _pageAccessOrder.Last.Value;
+                _pageAccessOrder.RemoveLast();
+                _pageAccessNodes.Remove(lruPageIndex);
+                _pages.Remove(lruPageIndex);
+
+                // Drop placeholder references for the evicted page so they can be collected too
+                var firstItemIndex = lruPageIndex * PageSize;
+                for (var offset = 0; offset < PageSize; offset++)
+                    _displayedItems.Remove(firstItemIndex + offset);
             }
         }
 
@@ -344,5 +393,9 @@ namespace EverythingToolbar.Search
 
         private Dictionary<int, List<T>?> _pages = new();
         private readonly Dictionary<int, T> _displayedItems = new();
+
+        private const int MaxResidentPages = 40;
+        private readonly LinkedList<int> _pageAccessOrder = new(); // Most-recently-used first, least-recently-used last
+        private readonly Dictionary<int, LinkedListNode<int>> _pageAccessNodes = new();
     }
 }
