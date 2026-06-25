@@ -304,6 +304,7 @@ end;
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   Result := '';
+  KillAppIfRunning;
   if IsDeskbandSelected then
     KillExplorerForDeskband;
 end;
